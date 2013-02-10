@@ -14,6 +14,19 @@ actions = [
     ('Preapproval request denied by financial institution', 'rejected'),
     ('Preapproval request approved but not accepted', 'accepted')
     ]
+agencies = [
+    None,
+    ('OCC','Office of the Comptroller of the Currency'),
+    ('FRS','Federal Reserve System'),
+    ('FDIC','Federal Deposit Insurance Corporation'),
+    ('OTS', 'Office of Thrift Supervision'),
+    ('NCUA', 'National Credit Union Administration'),
+    None,
+    ('HUD', 'Department of Housing and Urban Development'),
+    None,
+    ('CFPB', 'Consumer Financial Protection Bureau')
+    ]
+
 
 @app.route("/")
 def hello():
@@ -35,6 +48,7 @@ def dev():
     if not request.args.get('year')\
         or not request.args.get('loan_amount')\
         or not request.args.get('msa_md')\
+        or not request.args.get('agency')\
         or not request.args.get('applicant_income'):
         abort(400)
     
@@ -42,6 +56,11 @@ def dev():
         year = int(request.args.get('year'))
         loan_amount = int(request.args.get('loan_amount'))
         msa_md = int(request.args.get('msa_md'))
+        agency = int(request.args.get('agency'))
+        if agency == 4 or agency == 9:  #   OTS -> CFPB
+            agency_pair = (4,9)
+        else:
+            agency_pair = (agency,)
         income = int(request.args.get('applicant_income'))
     except ValueError:
         abort(400)
@@ -56,11 +75,11 @@ def dev():
         FROM """ + year + """
         WHERE loan_amount > %s AND loan_amount < %s AND msa_md=%s 
         AND applicant_income > %s AND applicant_income < %s
-        AND action_type IN (1,2,3,7,8)
+        AND action_type IN (1,2,3,7,8) AND agency IN %s
         GROUP BY action_type; 
         """
     cursor.execute(query, (loan_amount-15, loan_amount+15, msa_md, 
-        income-10, income+10))
+        income-10, income+10, agency_pair))
 
     results = {'accepted': 0, 'rejected': 0}
     for row in cursor.fetchall():
