@@ -44,14 +44,6 @@ cities = {
     }
 
 
-@app.route("/")
-def hello():
-    data = {'response': [
-        {'name': 'accepted', 'count': 8},
-        {'name': 'rejected', 'count': 4},
-        ]}
-    return jsonp(data)
-
 def jsonp(to_return):
     if request.args.get("callback"):
         return request.args.get("callback") + \
