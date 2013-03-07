@@ -76,6 +76,6 @@ $ psql -U hmda hmda
 
 $ mkvirtualenv hmdabackend
 $ cd Hmdapolis-backend/
-$ pip install flask psychopg2
+$ pip install -r requirements.txt
 
 ```
