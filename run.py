@@ -91,18 +91,19 @@ def apply():
     if year < 6 or year > 11:
         abort(400)
 
-    year = "hmda%02d" % (year,)
-
     query = """
         SELECT count(*), action_type 
-        FROM """ + year + """
-        WHERE loan_amount > %s AND loan_amount < %s AND msa_md=%s 
-        AND applicant_income > %s AND applicant_income < %s
-        AND action_type IN (1,2,3,7,8) AND agency IN %s
-        GROUP BY action_type; 
+        FROM hmda 
+        WHERE year = %s 
+        AND msa_md = %s 
+        AND action_type IN (1,2,3,7,8) 
+        AND agency IN %s 
+        AND loan_amount > %s AND loan_amount < %s 
+        AND applicant_income > %s AND applicant_income < %s 
+        GROUP BY action_type;
         """
-    cursor.execute(query, (loan_amount-15, loan_amount+15, msa_md, 
-        income-10, income+10, agency_pair))
+    cursor.execute(query, (year + 2000, msa_md, agency_pair,
+        loan_amount-15, loan_amount+15, income-10, income+10))
 
     results = {'accepted': 0, 'rejected': 0}
     for row in cursor.fetchall():
